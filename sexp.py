@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # https://gist.githubusercontent.com/pib/240957/raw/093bc0b1e6d5188af7b5df674a5af37d4927d5f0/sexp.py
 
+import ast
 import sys
 import unittest
 
@@ -57,7 +58,7 @@ def _parse(sexp):
             if c in atom_end:
                 atom = stack.pop()
                 if atom[0][0].isdigit():
-                    stack[-1].append(eval(atom[0]))
+                    stack[-1].append(ast.literal_eval(atom[0]))
                 else:
                     stack[-1].append(atom)
                 if stack[-1][0] == ('quote',):
