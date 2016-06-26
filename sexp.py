@@ -2,6 +2,8 @@
 # https://gist.githubusercontent.com/pib/240957/raw/093bc0b1e6d5188af7b5df674a5af37d4927d5f0/sexp.py
 
 import sys
+import unittest
+
 from string import whitespace
 
 atom_end = set('()"\'') | set(whitespace)
@@ -89,5 +91,28 @@ def parse(sexp):
     s = _parse(sexp)[0]
     return _thread_last(s)
 
+class Tests(unittest.TestCase):
+
+    def test_simple(self):
+        self.assertEqual(parse("(a (b c))"), ['a', ['b', 'c']])
+
+    def test_escape(self):
+        self.assertEqual(parse("(a (\"b foo\" c))"), ['a', ['b foo', 'c']])
+        self.assertEqual(parse("(a (\"b \\\" foo\" c))"), ['a', ['b " foo', 'c']])
+
+    def test_quote(self):
+        #self.assertEqual(parse("(a (b 'c))"), ['a', ['b', ['quote', 'c']]])
+        pass
+
+    def test_thread_last(self):
+        self.assertEqual(parse("(->> a b)"), ['b', 'a'])
+        self.assertEqual(parse("(->> a b c)"), ['c', ['b', 'a']])
+        self.assertEqual(parse("(->> (a) (b) (c))"), ['c', ['b', ['a']]])
+        self.assertEqual(parse("(->> (a) (b c) (d))"), ['d', ['b', 'c', ['a']]])
+        self.assertEqual(parse("(->> a (b) (c) (->> d e f))"),
+                         ['f', ['e', 'd'], ['c', ['b', 'a']]])
+
 if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        unittest.main()
     print(parse(sys.argv[1]))
